@@ -15,28 +15,44 @@ namespace SimpleProxy.Web.Controllers
 
         public ActionResult About()
         {
-            ViewBag.Message = "Your application description page.";
-
             return View();
         }
 
-        public ActionResult DownloadFile(string url)
+        public ActionResult DownloadFile(string url, bool isBase64Encoded = false)
         {
-            var fileName = GetFileNameFromUrl(url);
-            var data = DownloadUrl(url);
-            var mimeType = MimeMapping.GetMimeMapping(fileName);
+            var result = ProcessRequest(url, isBase64Encoded, "Download");
 
-            return File(data, mimeType, fileName);
+            return result;
         }
 
-        public ActionResult ViewFile(string url)
+        public ActionResult ViewFile(string url, bool isBase64Encoded = false)
         {
+            var result = ProcessRequest(url, isBase64Encoded, "View");
+
+            return result;
+        }
+
+        private ActionResult ProcessRequest(string url, bool isBase64Encoded, string action)
+        {
+            if (isBase64Encoded)
+            {
+                url = DecodeBase64(url);
+            }
+
             var fileName = GetFileNameFromUrl(url);
             var data = DownloadUrl(url);
             var mimeType = MimeMapping.GetMimeMapping(fileName);
-            var stream = new MemoryStream(data);
 
-            return new FileStreamResult(stream, mimeType);
+            if (action == "Download")
+            {
+                return File(data, mimeType, fileName);
+            }
+            else
+            {
+                var stream = new MemoryStream(data);
+
+                return new FileStreamResult(stream, mimeType);
+            }
         }
 
         private string GetFileNameFromUrl(string url)
@@ -54,6 +70,22 @@ namespace SimpleProxy.Web.Controllers
             }
 
             return data;
+        }
+
+        private string DecodeBase64(string url)
+        {
+            try
+            {
+                byte[] bytes = Convert.FromBase64String(url);
+
+                url = System.Text.Encoding.Default.GetString(bytes);
+            }
+            catch (FormatException)
+            {
+                // Not base64 string, return original URL
+            }
+
+            return url;
         }
     }
 }
