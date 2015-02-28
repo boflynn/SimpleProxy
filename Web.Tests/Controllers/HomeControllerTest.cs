@@ -4,8 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Web.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Web;
-using Web.Controllers;
+using SimpleProxy.Web.Controllers;
 
 namespace SimpleProxy.Web.Tests.Controllers
 {
